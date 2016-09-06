@@ -15,8 +15,8 @@ function init(){
 	ctx = canv.getContext("2d");
 	w = document.width;
 	h = document.height;
-	canv.width = 500;
-	canv.height = 400;
+	canv.width = 1000;
+	canv.height = 600;
 	ctx.lineWidth = rad*2;
 	ctx.fillStyle = ctx.strokeStyle = clr;
 	
