@@ -2,11 +2,9 @@
 
 var canv, ctx, w, h;
 var mousePressed = false;
-var rad = 3;
-var clrArr = ["#D72827","#F2461C","#EBC335","#30A135","#58C1DA","#2A12DA"];
+var rad = 0.25;
 var clr = '#fff';
-var clrGuest = '#ba0055';
-
+var color = "";
 //
 var socket;
 //
@@ -27,7 +25,17 @@ function init(){
 }
 
 function initSocket(){
-	socket = io.connect('https://martian-socket.herokuapp.com:443');
+	socket = io.connect();
+	// socket = io.connect('https://martian-socket.herokuapp.com:443');
+
+	socket.on('connect', function(){
+		socket.emit('colorRequest', 'name', function (data){
+			// color = data;
+			console.log("color should be:"+ data.color);
+			color = data.color;
+			updateStats(data);
+		})
+	})
 	socket.on('mouseNoiseMove', serverMouseMove);
 	socket.on('mouseNoiseDown', serverMouseDown);
 	socket.on('mouseNoiseUp', serverMouseUp);
@@ -35,16 +43,39 @@ function initSocket(){
 	// console.log("socket "+ socket);
 }
 
+function handleResponse(e){
+
+}
+
 function serverAddedUser(e){
+	console.log("updatingStats because a user is here");
 	//update stats
-	//e.total;
-	//e.users;
+	updateStats(e);
+	// e.total;
+	// e.users;
+
+}
+function updateStats(e){
+  ctx.clearRect(0, 0, 150, 50);
+  ctx.fillStyle="#fff";
+  ctx.font="9px sans-serif";
+  var str1 = "active users: "+ e.users;
+  var str2 = "total connections: "+ e.total;
+  ctx.fillText(str1, 10, 10);
+  ctx.fillText(str2, 10, 20);
+  ctx.fillText("your color:", 10, 30);
+  ctx.save();
+  console.log(socket.id+" ||||| "+e.id);
+  ctx.fillStyle = color;
+  ctx.fillRect (56,25,40,6);
+  ctx.restore();
 }
 
 function serverMouseMove(e){
-	// console.log("client: doMouse called");
-	// console.log("client: doMouse called "+e.total+" "+clrArr.length );
-	ctx.strokeStyle = clrArr[e.total%clrArr.length];
+	// console.log("client: doMouse called "+e.total+" "+e.color);
+	// var num = e.position%clrArr.length;
+	ctx.strokeStyle = e.color;
+	// console.log("client: doMouse called: "+e.position);
 	draw(e.x, e.y);
 }
 function serverMouseDown(e){

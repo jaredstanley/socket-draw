@@ -1,8 +1,8 @@
 console.log("welcome to the server");
-
 var userList = {
 	totalCount:0,
-	list:[]
+	list:[],
+	colorArr: ["#666666","#D72827","#F2461C","#EBC335","#30A135","#58C1DA","#1A2A8F"]
 };
 initUsers(); 
 
@@ -15,7 +15,7 @@ var server = app.listen(process.env.PORT || 443, listen);
 function listen() {
   var host = server.address().address;
   var port = server.address().port;
-  console.log('app listening at localhost:'+ port);
+  console.log('app listening at'+ host +" "+ port);
 }
 
 app.use(express.static('public'));
@@ -29,32 +29,45 @@ var io = socket(server);
 io.sockets.on('connection', newConnection);
 
 function newConnection(socket){
-	 console.log("new person: "+ socket.id);
+	 // console.log("new person: "+ socket.id);
 	addUser(socket);
+	//
+	socket.on('colorRequest', function (name, fn){
+		var data = {
+			total: userList.totalCount,
+			users: userList.list.length,
+			id: socket.id,
+			color: socket.color
+		}
+		fn(data);
+	});
 	socket.on('mousemove', doMouse);
+	socket.on('mousedown', doMouseDown);
+	socket.on('mouseup', doMouseUp);
+	socket.on('disconnect', doDisconnect);
+	//
 	function doMouse(data){
 		data.position = socket.position;
 		data.total = userList.totalCount;
+		data.color = socket.color;
 		// console.log("*mouseNoiseMove*"+ socket.position);
 		socket.broadcast.emit('mouseNoiseMove', data);
 	}
 
-	socket.on('mousedown', doMouseDown);
 	function doMouseDown(data){
-		console.log("******mouseDown*");
+		// console.log("******mouseDown*");
 		socket.broadcast.emit('mouseNoiseDown', data);
 	}
 
-	socket.on('mouseup', doMouseUp);
 	function doMouseUp(data){
-		console.log("******mouseUp*");
+		// console.log("******mouseUp*");
 		socket.broadcast.emit('mouseNoiseUp', data);
 	}
 
-	socket.on('disconnect', doDisconnect);
 	function doDisconnect(data){
 		
-		console.log("disconnected: "+socket.id);
+		// console.log("disconnected postion: "+socket.position);
+		// console.log("disconnected: "+socket.id);
 		removeUser(socket);
 	}
 
@@ -75,10 +88,15 @@ function addUser(socket){
 		socket.position = userList.list.length;
 		userList.list.push(socket);
 		userList.totalCount++;
-		console.log("adding user to position: "+socket.position);
+		var num = userList.totalCount%userList.colorArr.length;
+		socket.color = userList.colorArr[num];
+		// console.log(num+" socket.color = "+socket.color);
+		console.log("added user to position: "+socket.position+ " totalConnections: "+userList.totalCount + " currentCount: "+userList.list.length+ " colorPos: "+num);
 		var data = {
 			total: userList.totalCount,
-			users: userList.list.length
+			users: userList.list.length,
+			id: socket.id,
+			color: socket.color
 		}
 		socket.broadcast.emit('userAdded', data);
 	}
@@ -87,7 +105,7 @@ function addUser(socket){
 function removeUser(socket){
 	var i = userList.list.indexOf(socket);
 	userList.list.splice(i,1);
-	console.log("removing user at position: "+i);
+	console.log("removed user at position: "+i+" | userList.length is now: "+userList.list.length);
 	//TODO: fill the undefined array pos, or recycle the positoin color
 }
 
