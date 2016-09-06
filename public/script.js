@@ -27,7 +27,7 @@ function init(){
 }
 
 function initSocket(){
-	socket = io.connect('https://localhost:3000');
+	socket = io.connect('https://localhost:443');
 	socket.on('mouseNoiseMove', serverMouseMove);
 	socket.on('mouseNoiseDown', serverMouseDown);
 	socket.on('mouseNoiseUp', serverMouseUp);
