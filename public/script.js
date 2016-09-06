@@ -43,7 +43,7 @@ function serverAddedUser(e){
 
 function serverMouseMove(e){
 	// console.log("client: doMouse called");
-	console.log("client: doMouse called "+e.total+" "+clrArr.length );
+	// console.log("client: doMouse called "+e.total+" "+clrArr.length );
 	ctx.strokeStyle = clrArr[e.total%clrArr.length];
 	draw(e.x, e.y);
 }
